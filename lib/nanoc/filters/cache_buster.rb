@@ -5,7 +5,7 @@ module Nanoc
 
       def run(content, options = {})
         kind = options[:strategy] || (stylesheet? ? :css : :html)
-        strategy = Nanoc::Cachebuster::Strategy.for(kind , site, item)
+        strategy = Nanoc::Cachebuster::Strategy.for(kind, @items, @item)
         content.gsub(strategy.class::REGEX) do |m|
           begin
             strategy.apply m, $1, $2, $3, $4
@@ -25,7 +25,7 @@ module Nanoc
       # @see Nanoc::Cachebuster::FILETYPES_CONSIDERED_CSS
       # @return <Bool>
       def stylesheet?
-        Nanoc::Cachebuster::FILETYPES_CONSIDERED_CSS.include?(item[:extension].to_s)
+        Nanoc::Cachebuster::FILETYPES_CONSIDERED_CSS.include?(@item.identifier.ext)
       end
     end
   end

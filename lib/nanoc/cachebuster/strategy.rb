@@ -15,29 +15,25 @@ module Nanoc
         @subclasses[subclass.to_s.split('::').last.downcase.to_sym] = subclass
       end
 
-      def self.for(kind, site, item)
+      def self.for(kind, items, item)
         klass = @subclasses[kind]
         raise Nanoc::Cachebuster::NoSuchStrategy.new "No strategy found for #{kind}" unless klass
-        klass.new(site, item)
+        klass.new(items, item)
       end
 
-      # The current site. We need a reference to that in a strategy,
+      # The set of items for the site. We need a reference to that in a strategy,
       # so we can browse through all its items.
       #
-      # This might very well have been just the site#items array, but for
-      # future portability we might as well carry the entire site object
-      # over.
-      #
-      # @return <Nanoc::Site>
-      attr_reader :site
+      # @return [Enumerable<Nanoc::Int::Item>]
+      attr_reader :items
 
       # The Nanoc item we are currently filtering.
       #
       # @return <Nanoc::Item>
       attr_reader :current_item
 
-      def initialize(site, current_item)
-        @site, @current_item = site, current_item
+      def initialize(items, current_item)
+        @items, @current_item = items, current_item
       end
 
       # Abstract method that subclasses (actual strategies) should
@@ -68,7 +64,7 @@ module Nanoc
       def output_filename(input_path)
         path = absolutize(input_path)
 
-        matching_item = site.items.find do |i|
+        matching_item = items.find do |i|
           next unless i.path # some items don't have an output path. Ignore those.
           i.path.sub(/#{Nanoc::Cachebuster::CACHEBUSTER_PREFIX}[a-zA-Z0-9]{9}(?=\.)/o, '') == path
         end
@@ -85,7 +81,7 @@ module Nanoc
         # the current file path.
         current_path = Pathname.new(File.dirname(current_item.path.sub(/^\//, '')))
         target_path  = Pathname.new(File.dirname(matching_item.path.sub(/^\//, '')))
-        output_reference = target_path.relative_path_from(current_path).join(File.basename(matching_item.path))
+        target_path.relative_path_from(current_path).join(File.basename(matching_item.path))
       end
 
       # Get the absolute path to a file, whereby absolute means relative to the root.

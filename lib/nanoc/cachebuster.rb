@@ -31,7 +31,7 @@ module Nanoc
     NoSuchStrategy = Class.new(Exception)
 
     def self.should_apply_fingerprint_to_file?(item)
-      FILETYPES_TO_FINGERPRINT.include? item[:extension]
+      FILETYPES_TO_FINGERPRINT.include? item.identifier.ext
     end
 
     def self.fingerprint_file(filename, length = 8)
